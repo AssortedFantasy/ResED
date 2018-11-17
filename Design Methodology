@@ -1,0 +1,23 @@
+TODO LIST:
+-Wave Equation Thingy Magic
+    Class Simulator
+        -> Initialized with a numpy matrix. (Initial Conditions)
+        -> 3D matrix (Points and Time)
+        -> Current time
+        -> Forcers
+
+    Class Forcers:
+        -> Position
+        -> Force Function F(t)
+
+-Imports things
+    Makes pictures
+    Not well defined right now.
+
+-Hands sounds and makes forcers with them.
+    Makes forcers and puts them in the simulator.
+
+-Exports Pictures
+    Makes picture
+
+-Video Magic
