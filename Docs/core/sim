@@ -6,4 +6,10 @@ Making a simulation requires these parameters:
 initial conditions: A numpy array or something that can be converted into a numpy array.
 Must be 5 * y * x
 
-The first two represent the initial positions. This is done instead of using
+The first two represent the initial positions and initial velocity of the grid.
+
+2, 3 and 4 represent in order:
+
+E : The Youngs Modulus
+1/P : One over the density
+B : The damping factor
