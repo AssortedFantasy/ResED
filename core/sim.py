@@ -101,7 +101,7 @@ class Simulator:
         return previous_values[:, :, :]
 
 
-class RamSim:
+class RamSim(Simulator):
     # Much less ram murdering :^) Only 100 Frames total.
     def __init__(self, initial_conditions: np.ndarray, timestep=DEFAULT_TIME_STEP, edge_conditions="constant",
                  edge_value=0):
