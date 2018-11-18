@@ -25,7 +25,7 @@ def initial_position_velocity_picture(filename):
 def initial_params_picture(filename):
     narray = image_to_array(filename)
     redarray = linear_scaling(narray[:, :, 0])
-    E = 50 * redarray
+    E = 100 * redarray
     greenarray = linear_scaling(narray[:, :, 1])
     over_density = 10 * greenarray
     bluearray = linear_scaling(narray[:, :, 2])
