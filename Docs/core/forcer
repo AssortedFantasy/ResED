@@ -1,0 +1,19 @@
+The forcer file defines several types of forces as functions of time
+
+The super class, Forcer, expects a lambda function as a force argument
+
+The subclasses of Force include:
+    Constant force: expects a constant value as a force. Returns the same value regardless of time
+
+    Polynomial force: expects an array of coefficients as a force argument, the position of each coefficient in the
+                      array is used to determine the power it is associated with
+
+    Sinosudal force: expects arguments describing amplitude, phase shift and angular frequency in that order
+                     uses the math library for the sin function, angular frequency is in radians
+
+    Audio force: expects a 1D array listing samples, and a sample rate to be read at, when passed a given time
+                 it will return the sample located at the time multiplied by the sample rate
+
+    Discrete force: expects an array of lambda functions as well as an array of time domains where they are applicable
+                    since this would not be an analytic function, it will return DEFAULT_VALUE if the time is not within
+                    the time domain
