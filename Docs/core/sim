@@ -1,3 +1,28 @@
-This is docs for sim.
+Sim is the file containing the main simulator class
+This runs the actual simulation and is the file you Poll in order to get simulation data.
 
+Making a simulation requires these parameters:
+    Initial conditions: A numpy array or something that can be converted into a numpy array.
+        Must be 5 * y * x
 
+        The first two represent the initial positions and initial velocity of the grid.
+
+        2, 3 and 4 represent in order:
+
+        E : The Youngs Modulus
+        1/P : One over the density
+        B : The damping factor
+
+    Optionally:
+        Timestep, the simulation timestep, the smaller the finer the simulation runs.
+        Edge conditions, How the laplace operator behaves along the edges. Must be one of
+        reflect', 'constant', 'nearest', 'mirror', 'wrap'
+
+        If its constant you may use the Last parameter, "edge_value" to define the constant.
+
+Methods:
+    simulate:
+        Runs the simulation, n many steps.
+
+    simulate_time:
+        Runs the simulation, for t time.

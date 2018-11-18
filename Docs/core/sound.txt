@@ -1,0 +1,16 @@
+3D array - initial_conditions
+1st  -E
+2nd - 1/Density
+3rd - Damping
+
+Shape of numpy array - [3 y x]
+
+dtype np.float16
+
+White at [0 0] actualyl 255 255
+
+log scale normailized
+
+big position blue
+
+little position is red

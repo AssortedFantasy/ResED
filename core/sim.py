@@ -9,44 +9,42 @@ ARRAY_BREAK_LENGTH = 1_000    # Must be > 3
 
 class Simulator:
     # Main simulator for program.
-    def __init__(self, initital_conditions: np.ndarray, timestep=DEFAULT_TIME_STEP, edge_conditions="constant", edge_value=0):
+    def __init__(self, initial_conditions: np.ndarray, timestep=DEFAULT_TIME_STEP, edge_conditions="constant", edge_value=0):
         if edge_conditions not in ['reflect', 'constant', 'nearest', 'mirror', 'wrap']:
             raise RuntimeError("invalid edge condition!")
         edge_value = float(edge_value)
+        initial_conditions = np.array(initial_conditions, dtype=np.float)
 
         self.edge_value = edge_value
         self.edge_conditions = edge_conditions
         self.timestep = timestep
-        self.simulation_parameters = initital_conditions[2:, :, :]
+        self.simulation_parameters = initial_conditions[2:, :, :]
         self.sim_data = []
         self.forcers = []
 
-        # First two steps must be DEFINED.
-        self.step = 2
+        # First step (step 0) is defined.
+        self.step = 1
 
-        z, self.height, self.width = initital_conditions.shape
+        z, self.height, self.width = initial_conditions.shape
 
         if z != 5:
             raise RuntimeError("invalid initial conditions!")
 
-        data = np.zeros((ARRAY_BREAK_LENGTH, 3, self.height, self.width), dtype=np.float16)
+        data = np.zeros((ARRAY_BREAK_LENGTH, 3, self.height, self.width), dtype=np.float)
 
         # Initial calculations done manually.
 
-        # First two positions defined
-        data[:2, 0, :, :] = initital_conditions[:2, :, :]
-        # First velocity is zero, Second is deltaX / t
-        data[1, 1, :, :] = (data[1, 0, :, :] - data[0, 0, :, :]) / self.timestep
-        # Instead of using the wave equation to calculate a for the two points, its forced into position.
-        # So its actually going to be defined using v
-        data[0, 2, :, :] = data[1, 1, :, :] / self.timestep
-        # We need to calculate the first acceleration MANUALLY.
-        filters.laplace(data[1, 0, :, :], data[1, 2, :, :], self.edge_conditions, self.edge_value)
-        data[1, 2, :, :] = self.simulation_parameters[0, :, :]
-        data[1, 2, :, :] -= data[1, 1, :, :] * self.simulation_parameters[2, :, :]
+        # Setting initial positions
+        data[0, 0, :, :] = initial_conditions[0, :, :]
+        # Setting initial velocity
+        data[0, 1, :, :] = initial_conditions[1, :, :]
+        # Calculating initial acceleration using positions and velocities.
+        filters.laplace(data[0, 0, :, :], data[0, 2, :, :], self.edge_conditions, self.edge_value)
+        data[0, 2, :, :] = self.simulation_parameters[0, :, :]
+        data[0, 2, :, :] -= data[0, 1, :, :] * self.simulation_parameters[2, :, :]
         for forcer in self.forcers:
-            data[1, 2, forcer.position_y, forcer.position_x] += forcer(self.timestep * self.step)
-        data[1, 2, :, :] *= self.simulation_parameters[1, :, :]
+            data[0, 2, forcer.position_y, forcer.position_x] += forcer(0)
+        data[0, 2, :, :] *= self.simulation_parameters[1, :, :]
         self.sim_data.append(data)
 
     def simulate(self, steps=1):
@@ -62,7 +60,7 @@ class Simulator:
             # Handling split arrays
             if self.step % ARRAY_BREAK_LENGTH == 0:
                 # Split magically
-                new_data = np.zeros((ARRAY_BREAK_LENGTH, 3, self.height, self.width), dtype=np.float16)
+                new_data = np.zeros((ARRAY_BREAK_LENGTH, 3, self.height, self.width), dtype=np.float)
                 self.sim_data.append(new_data)
                 data = self.sim_data[-1]
 
@@ -87,3 +85,35 @@ class Simulator:
             curr_acceleration *= self.simulation_parameters[1, :, :]
 
             self.step += 1
+
+    def simulate_time(self, time=1):
+        number_of_steps = int(time/self.timestep)
+        self.simulate(number_of_steps)
+
+    def at_step(self, step):
+        if self.step < step:
+            self.simulate(step - self.step + 1)
+
+        data = self.sim_data[step // ARRAY_BREAK_LENGTH]
+        return data[step % ARRAY_BREAK_LENGTH, :, :, :].copy()
+
+    def at_time(self, time):
+        # Nearest Calculated point, then do forward Euler integration on it.
+        nearest_lower_step = int(time/self.timestep)
+        # Now that we have this we need to grab the nearest lower step and perform forward Euler on it.
+        previous_values = self.at_step(nearest_lower_step)
+        delta_t = time - self.timestep*nearest_lower_step
+
+        previous_values[0, :, :] += previous_values[1, :, :]*delta_t + 1/2*previous_values[2, :, :]*delta_t**2
+        previous_values[1, :, :] += previous_values[2, :, :]*delta_t
+
+        # Now we need to calculate the accleration, again.
+        filters.laplace(previous_values[0, :, :], previous_values[2, :, :])
+        previous_values[2, :, :] *= self.simulation_parameters[0, :, :]
+        previous_values[2, :, :] -= self.simulation_parameters[2, :, :] * previous_values[1, :, :]
+        for forcer in self.forcers:
+            previous_values[2, forcer.position_y, forcer.position_x] += forcer(time)
+
+        previous_values[2, :, :] *= self.simulation_parameters[1, :, :]
+
+        return previous_values[:, :, :]
