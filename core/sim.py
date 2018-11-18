@@ -86,12 +86,34 @@ class Simulator:
 
             self.step += 1
 
+    def simulate_time(self, time=1):
+        number_of_steps = int(time/self.timestep)
+        self.simulate(number_of_steps)
+
     def at_step(self, step):
         if self.step < step:
             self.simulate(step - self.step + 1)
 
         data = self.sim_data[step // ARRAY_BREAK_LENGTH]
-        return data[step % ARRAY_BREAK_LENGTH, :, :, :]
+        return data[step % ARRAY_BREAK_LENGTH, :, :, :].copy()
 
-    def at_time(self, step):
-        pass
+    def at_time(self, time):
+        # Nearest Calculated point, then do forward Euler integration on it.
+        nearest_lower_step = int(time/self.timestep)
+        # Now that we have this we need to grab the nearest lower step and perform forward Euler on it.
+        previous_values = self.at_step(nearest_lower_step)
+        delta_t = time - self.timestep*nearest_lower_step
+
+        previous_values[0, :, :] += previous_values[1, :, :]*delta_t + 1/2*previous_values[2, :, :]*delta_t**2
+        previous_values[1, :, :] += previous_values[2, :, :]*delta_t
+
+        # Now we need to calculate the accleration, again.
+        filters.laplace(previous_values[0, :, :], previous_values[2, :, :])
+        previous_values[2, :, :] *= self.simulation_parameters[0, :, :]
+        previous_values[2, :, :] -= self.simulation_parameters[2, :, :] * previous_values[1, :, :]
+        for forcer in self.forcers:
+            previous_values[2, forcer.position_y, forcer.position_x] += forcer(time)
+
+        previous_values[2, :, :] *= self.simulation_parameters[1, :, :]
+
+        return previous_values[:, :, :]
