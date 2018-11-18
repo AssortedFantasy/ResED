@@ -14,16 +14,7 @@ def array_to_param(array):
     return E, overdensity, B
 
 def scale_array(array):
-    maximum = np.amax(array)
-    minimum = np.amin(array)
-    if abs(maximum) >= abs(minimum):
-        denom = maximum
-    else:
-        denom = abs(minimum)
-    if denom == 0:
-        denom = 1
-    scaledarray = array / denom
-    return scaledarray
+    return np.arctan(array)/(np.pi*0.5)
 
 
 def array_to_image(array):
@@ -32,8 +23,10 @@ def array_to_image(array):
     one = np.ones((height, width))
     absolutes = np.abs(array)
 
-    image = np.zeros((height, width, 3))
+    image = np.zeros((height, width, 3), dtype=np.uint8)
     image[:, :, 1] = (one - absolutes) * 255
     image[:, :, 2] = (2*one - array - absolutes)/2 * 255
     image[:, :, 0] = (2*one + array - absolutes)/2 * 255
+
+    image = Image.fromarray(image, "RGB")
     return image

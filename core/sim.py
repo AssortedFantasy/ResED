@@ -31,6 +31,7 @@ class Simulator:
             raise RuntimeError("invalid initial conditions!")
 
         data = np.zeros((ARRAY_BREAK_LENGTH, 3, self.height, self.width), dtype=np.float)
+        self.sim_data.append(data)
 
         # Initial calculations done manually.
 
@@ -39,13 +40,8 @@ class Simulator:
         # Setting initial velocity
         data[0, 1, :, :] = initial_conditions[1, :, :]
         # Calculating initial acceleration using positions and velocities.
-        filters.laplace(data[0, 0, :, :], data[0, 2, :, :], self.edge_conditions, self.edge_value)
-        data[0, 2, :, :] = self.simulation_parameters[0, :, :]
-        data[0, 2, :, :] -= data[0, 1, :, :] * self.simulation_parameters[2, :, :]
-        for forcer in self.forcers:
-            data[0, 2, forcer.position_y, forcer.position_x] += forcer(0)
-        data[0, 2, :, :] *= self.simulation_parameters[1, :, :]
-        self.sim_data.append(data)
+        compute_accelerations(data[0, 2, :, :], data[0, 1, :, :], data[0, 0, :, :], self.simulation_parameters,
+                              self.forcers, 0, self.edge_conditions, self.edge_value)
 
     def simulate(self, steps=1):
         for _ in range(steps):
@@ -73,17 +69,8 @@ class Simulator:
             curr_position += prev_position + prev_velocity*self.timestep + 1/2*prev_acceleration*self.timestep**2
             curr_velocity += prev_velocity + prev_acceleration*self.timestep
             # Compute Current Acceleration
-            # Laplace(U) * E
-            filters.laplace(curr_position, curr_acceleration, self.edge_conditions, self.edge_value)
-            curr_acceleration *= self.simulation_parameters[0, :, :]
-            # - B * V
-            curr_acceleration -= curr_velocity * self.simulation_parameters[2, :, :]
-            # Forces
-            for forcer in self.forcers:
-                curr_acceleration[forcer.position_y, forcer.position_x] += forcer(self.timestep*self.step)
-            # Forces has become acceleration
-            curr_acceleration *= self.simulation_parameters[1, :, :]
-
+            compute_accelerations(curr_acceleration, curr_velocity, curr_position, self.simulation_parameters,
+                                  self.forcers, self.step*self.timestep, self.edge_conditions, self.edge_value)
             self.step += 1
 
     def simulate_time(self, time=1):
@@ -108,12 +95,22 @@ class Simulator:
         previous_values[1, :, :] += previous_values[2, :, :]*delta_t
 
         # Now we need to calculate the accleration, again.
-        filters.laplace(previous_values[0, :, :], previous_values[2, :, :])
-        previous_values[2, :, :] *= self.simulation_parameters[0, :, :]
-        previous_values[2, :, :] -= self.simulation_parameters[2, :, :] * previous_values[1, :, :]
-        for forcer in self.forcers:
-            previous_values[2, forcer.position_y, forcer.position_x] += forcer(time)
-
-        previous_values[2, :, :] *= self.simulation_parameters[1, :, :]
-
+        compute_accelerations(previous_values[2, :, :], previous_values[1, :, :], previous_values[0, :, :],
+                              self.simulation_parameters, self.forcers, time, self.edge_conditions, self.edge_value)
         return previous_values[:, :, :]
+
+
+def compute_accelerations(current_acceleration, current_velocities, current_positions, simulation_parameters, forcers,
+                          time, edge_conditions, edge_value):
+    # First Laplace * E
+    filters.laplace(current_positions, current_acceleration, edge_conditions, edge_value)
+    current_acceleration *= simulation_parameters[0, :, :]
+
+    # Then -B * V
+    current_acceleration -= current_velocities * simulation_parameters[2, :, :]
+
+    # Then forcers forces
+    for forcer in forcers:
+        current_acceleration[forcer.position_y, forcer.position_x] += forcer(time)
+
+    current_acceleration *= simulation_parameters[1, :, :]
