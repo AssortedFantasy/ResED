@@ -5,8 +5,6 @@ def imagetoarray(filename):
     # https: // stackoverflow.com / questions / 49271913 / convert - numpy - array - to - rgb - image
     picture = Image.open("%s" %filename)
     nparray = np.asarray(picture, dtype=np.float)
-    print(nparray)
-    print(nparray.shape)
     return nparray
 
 def arraytowave(array):
@@ -16,8 +14,8 @@ def arraytowave(array):
     return E, overdensity, B
 
 def scalearray(array):
-    maximum = array.flatten()[np.argmax(array)]
-    minimum = array.flatten()[np.argmin(array)]
+    maximum = np.amax(a)
+    minimum = np.amin(a)
     if abs(maximum) >= abs(minimum):
         denom = maximum
     elif abs(maximum) < abs(minimum):
@@ -27,7 +25,7 @@ def scalearray(array):
 
 
 def rgbsorting(scaledarray):
-    positivearray = scaledarray([]
+
 
 def arraytoimage(processedarray):
     image = Image.fromarray(processedarray, "RGB")
