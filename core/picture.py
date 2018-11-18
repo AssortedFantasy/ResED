@@ -29,9 +29,9 @@ def initial_params_picture(filename):
     greenarray = narray[:, :, 1]
     bluearray = narray[:, :, 2]
 
-    E = redarray / 10
-    over_density = greenarray / 20
-    B = bluearray / 300
+    E = redarray / 60
+    over_density = greenarray / 80
+    B = bluearray / 100
     return E, over_density, B
 
 
@@ -45,7 +45,6 @@ def initial_conditions_pictures(pvimage, paramimage):
     initial_conditions[2, :, :] = E
     initial_conditions[3, :, :] = over_density
     initial_conditions[4, :, :] = B
-    print(initial_conditions)
     return initial_conditions
 
 
