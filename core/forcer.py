@@ -7,7 +7,7 @@ class Force:
     # Default return value if the forcer cannot define the value at the given time
     DEFAULT_VALUE = 0
 
-    def __init__(self,position_x, position_y, force):
+    def __init__(self, position_x, position_y, force):
         # Lambda function to describe force
         self.force = force
         # Position of the x coordinate of the force
@@ -80,7 +80,7 @@ class DiscreteForce(Force):
     # Call object to get force at set time
     def __call__(self, time):
         for time_max in range(len(self.time_domain)):
-            if self.time < self.time_domain[time_max]:
+            if time < self.time_domain[time_max]:
                 return self.forces[time_max](time)
         return super.DEFAULT_VALUE
 
@@ -88,7 +88,7 @@ class DiscreteForce(Force):
 class AudioForce(Force):
 
     def __init__(self, position_x, position_y, force_array, sample_rate):
-        self.force = lambda time : force_array[time * sample_rate]
+        self.force = lambda time: force_array[time * sample_rate]
         self.position_x = position_x
         self.position_y = position_y
 
