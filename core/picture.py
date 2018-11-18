@@ -31,7 +31,7 @@ def initial_params_picture(filename):
 
     E = redarray / 60
     over_density = greenarray / 80
-    B = bluearray / 100
+    B = bluearray / 120
     return E, over_density, B
 
 
@@ -55,7 +55,7 @@ def array_to_param(array):
     return E, overdensity, B
 
 def scale_array(array):
-    return np.arctan(array)/(np.pi*0.5)
+    return np.arctan(array*8)/(np.pi*0.5)
 
 
 def array_to_image(array):
