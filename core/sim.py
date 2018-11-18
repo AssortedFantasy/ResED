@@ -5,7 +5,7 @@ import scipy.ndimage.filters as filters
 # Global Parameters
 DEFAULT_TIME_STEP = 0.01
 ARRAY_BREAK_LENGTH = 1_000    # Must be > 3
-RAM_SAVER_SAVER = 100
+RAM_SAVER_LENGTH = 10
 
 
 class Simulator:
@@ -101,12 +101,44 @@ class Simulator:
         return previous_values[:, :, :]
 
 
-class RamSim(Simulator):
-    # Much less ram murdering :^) Only stores one set of frames.
+class RamSim:
+    # Much less ram murdering :^) Only 100 Frames total.
+    def __init__(self, initial_conditions: np.ndarray, timestep=DEFAULT_TIME_STEP, edge_conditions="constant",
+                 edge_value=0):
+        if edge_conditions not in ['reflect', 'constant', 'nearest', 'mirror', 'wrap']:
+            raise RuntimeError("invalid edge condition!")
+        edge_value = float(edge_value)
+        initial_conditions = np.array(initial_conditions, dtype=np.float)
+
+        self.edge_value = edge_value
+        self.edge_conditions = edge_conditions
+        self.timestep = timestep
+        self.simulation_parameters = initial_conditions[2:, :, :]
+        self.forcers = []
+
+        # First step (step 0) is defined.
+        self.step = 1
+        z, self.height, self.width = initial_conditions.shape
+
+        if z != 5:
+            raise RuntimeError("invalid initial conditions!")
+
+        self.sim_data = np.zeros((ARRAY_BREAK_LENGTH, 3, self.height, self.width), dtype=np.float)
+
+        # Initial calculations done manually.
+
+        # Setting initial positions
+        self.sim_data[0, 0, :, :] = initial_conditions[0, :, :]
+        # Setting initial velocity
+        self.sim_data[0, 1, :, :] = initial_conditions[1, :, :]
+        # Calculating initial acceleration using positions and velocities.
+        compute_accelerations(self.sim_data[0, 2, :, :], self.sim_data[0, 1, :, :], self.sim_data[0, 0, :, :],
+                              self.simulation_parameters, self.forcers, 0, self.edge_conditions, self.edge_value)
+
     def simulate(self, steps=1):
-        data = self.sim_data[0]
+        data = self.sim_data
         for _ in range(steps):
-            index = self.step % ARRAY_BREAK_LENGTH
+            index = self.step % RAM_SAVER_LENGTH
 
             # These are not copies, they are views
             prev_position = data[index-1, 0, :, :]
@@ -131,8 +163,8 @@ class RamSim(Simulator):
         if self.step < step:
             self.simulate(step - self.step + 1)
 
-        data = self.sim_data[0]
-        return data[step % ARRAY_BREAK_LENGTH, :, :, :].copy()
+        data = self.sim_data
+        return data[step % RAM_SAVER_LENGTH, :, :, :].copy()
 
 
 def compute_accelerations(current_acceleration, current_velocities, current_positions, simulation_parameters, forcers,
