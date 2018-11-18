@@ -8,6 +8,7 @@ class Force:
     DEFAULT_VALUE = 0
 
     def __init__(self, position_x, position_y, force):
+        self.is_exhausted = False
         # Lambda function to describe force
         self.force = force
         # Position of the x coordinate of the force
@@ -30,6 +31,7 @@ class Force:
 class ConstantForce(Force):
 
     def __init__(self, position_x, position_y, force):
+        self.is_exhausted = False
         self.force = force
         self.position_x = position_x
         self.position_y = position_y
@@ -43,6 +45,7 @@ class ConstantForce(Force):
 class PolynomialForce(Force):
 
     def __init__(self, position_x, position_y, coefficients):
+        self.is_exhausted = False
         # Every value in the coefficient array specifices the coefficeint for a given power of x
         # The 0th index corresponds to the constant term, the 2nd index corresponds to the 2nd power of x etc.
         for exponent in range(0,len(coefficients)):
@@ -60,6 +63,7 @@ class PolynomialForce(Force):
 class SinosudalForce(Force):
 
     def __init__(self, position_x, position_y, amplitude, phase_shift, angular_frequency):
+        self.is_exhausted = False
         self.force = lambda time: amplitude * math.sin(phase_shift + time * angular_frequency)
         self.position_x = position_x
         self.position_y = position_y
@@ -70,8 +74,8 @@ class SinosudalForce(Force):
 
 
 class DiscreteForce(Force):
-
     def __init__(self, position_x, position_y, forces, time_domain):
+        self.is_exhausted = False
         self.time_domain = time_domain
         self.forces = forces
         self.position_x = position_x
@@ -84,9 +88,7 @@ class DiscreteForce(Force):
                 return self.forces[time_max](time)
         return super.DEFAULT_VALUE
 
-
 class AudioForce(Force):
-
     def __init__(self, position_x, position_y, force_array, sample_rate):
         self.force = lambda time: force_array[time * sample_rate]
         self.position_x = position_x
