@@ -21,11 +21,13 @@ size = width, height = image.get_rect().size
 screen = pygame.display.set_mode(size, pygame.RESIZABLE)
 pygame.font.init()
 font = pygame.font.SysFont("Modern Sans", 30)
+
 button_next_dim = (width / 2 + 30, height / 2, 60, 20)
 button_prev_dim = (width / 2 - 60,  height - 100, 60, 20)
 next_button = pygame.Rect(button_prev_dim)
 prev_button = pygame.Rect(button_next_dim)
-text_box = pygame.Rect(0,0,0,0)
+text_box = pygame.Rect(0, 0, 0, 0)
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
