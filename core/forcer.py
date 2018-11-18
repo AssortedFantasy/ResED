@@ -16,7 +16,7 @@ class Force:
         self.position_y = position_y
 
     # Call object to get force at set time
-    def __call__(self,time):
+    def __call__(self, time):
         return self.force(time)
 
     def get_x_pos(self):
@@ -29,7 +29,7 @@ class Force:
 # Special Case for forcers of constant value
 class ConstantForce(Force):
 
-    def __init__(self,position_x, position_y, force):
+    def __init__(self, position_x, position_y, force):
         self.force = force
         self.position_x = position_x
         self.position_y = position_y
@@ -42,7 +42,7 @@ class ConstantForce(Force):
 # Forcers for forces with polynomial relation to time
 class PolynomialForce(Force):
 
-    def __init__(self,position_x, position_y, coefficients):
+    def __init__(self, position_x, position_y, coefficients):
         # Every value in the coefficient array specifices the coefficeint for a given power of x
         # The 0th index corresponds to the constant term, the 2nd index corresponds to the 2nd power of x etc.
         for exponent in range(0,len(coefficients)):
@@ -59,7 +59,7 @@ class PolynomialForce(Force):
 # Defines the force as a sinodudal function using arguments of amplitude, phase_shift, and angular_frequency
 class SinosudalForce(Force):
 
-    def __init__(self,position_x, position_y, amplitude, phase_shift, angular_frequency):
+    def __init__(self, position_x, position_y, amplitude, phase_shift, angular_frequency):
         self.force = lambda time: amplitude * math.sin(phase_shift + time * angular_frequency)
         self.position_x = position_x
         self.position_y = position_y
