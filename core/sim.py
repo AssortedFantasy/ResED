@@ -67,8 +67,8 @@ class Simulator:
             curr_acceleration = data[index, 2, :, :]
 
             # Forward Euler Method
-            curr_position += prev_position + prev_velocity*self.timestep + 1/2*prev_acceleration*self.timestep**2
-            curr_velocity += prev_velocity + prev_acceleration*self.timestep
+            curr_position[:, :] = prev_position + prev_velocity*self.timestep + 1/2*prev_acceleration*self.timestep**2
+            curr_velocity[:, :] = prev_velocity + prev_acceleration*self.timestep
             # Compute Current Acceleration
             compute_accelerations(curr_acceleration, curr_velocity, curr_position, self.simulation_parameters,
                                   self.forcers, self.step*self.timestep, self.edge_conditions, self.edge_value)
@@ -146,8 +146,8 @@ class RamSim(Simulator):
             curr_acceleration = self.sim_data[index, 2, :, :]
 
             # Forward Euler Method
-            curr_position += prev_position + prev_velocity*self.timestep + 1/2*prev_acceleration*self.timestep**2
-            curr_velocity += prev_velocity + prev_acceleration*self.timestep
+            curr_position[:, :] = prev_position + prev_velocity*self.timestep + 1/2*prev_acceleration*self.timestep**2
+            curr_velocity[:, :] = prev_velocity + prev_acceleration*self.timestep
             # Compute Current Acceleration
             compute_accelerations(curr_acceleration, curr_velocity, curr_position, self.simulation_parameters,
                                   self.forcers, self.step*self.timestep, self.edge_conditions, self.edge_value)

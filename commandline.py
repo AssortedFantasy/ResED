@@ -4,7 +4,7 @@ from core import sim
 import numpy as np
 import sys
 
-SIMULATION_RANGE = range(0, 10_000, 20)
+SIMULATION_RANGE = range(0, 2_000, 10)
 
 if __name__ == "__main__":
     print("python3 commandline.py <pvimage> <paraimage>")
