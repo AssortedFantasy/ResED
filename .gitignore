@@ -187,4 +187,4 @@ pip-selfcheck.json
 
 # End of https://www.gitignore.io/api/python,pycharm
 
-/output
+output/*
