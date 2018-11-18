@@ -5,6 +5,7 @@ import scipy.ndimage.filters as filters
 # Global Parameters
 DEFAULT_TIME_STEP = 0.01
 ARRAY_BREAK_LENGTH = 1_000    # Must be > 3
+RAM_SAVER_SAVER = 100
 
 
 class Simulator:
@@ -98,6 +99,40 @@ class Simulator:
         compute_accelerations(previous_values[2, :, :], previous_values[1, :, :], previous_values[0, :, :],
                               self.simulation_parameters, self.forcers, time, self.edge_conditions, self.edge_value)
         return previous_values[:, :, :]
+
+
+class RamSim(Simulator):
+    # Much less ram murdering :^) Only stores one set of frames.
+    def simulate(self, steps=1):
+        data = self.sim_data[0]
+        for _ in range(steps):
+            index = self.step % ARRAY_BREAK_LENGTH
+
+            # These are not copies, they are views
+            prev_position = data[index-1, 0, :, :]
+            prev_velocity = data[index-1, 1, :, :]
+            prev_acceleration = data[index-1, 2, :, :]
+            # For the ram saver version, we just roll with the fact we are overwriting previous data.
+
+            # Also not copies, these are views
+            curr_position = data[index, 0, :, :]
+            curr_velocity = data[index, 1, :, :]
+            curr_acceleration = data[index, 2, :, :]
+
+            # Forward Euler Method
+            curr_position += prev_position + prev_velocity*self.timestep + 1/2*prev_acceleration*self.timestep**2
+            curr_velocity += prev_velocity + prev_acceleration*self.timestep
+            # Compute Current Acceleration
+            compute_accelerations(curr_acceleration, curr_velocity, curr_position, self.simulation_parameters,
+                                  self.forcers, self.step*self.timestep, self.edge_conditions, self.edge_value)
+            self.step += 1
+
+    def at_step(self, step):
+        if self.step < step:
+            self.simulate(step - self.step + 1)
+
+        data = self.sim_data[0]
+        return data[step % ARRAY_BREAK_LENGTH, :, :, :].copy()
 
 
 def compute_accelerations(current_acceleration, current_velocities, current_positions, simulation_parameters, forcers,
