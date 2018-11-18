@@ -27,9 +27,9 @@ def initial_params_picture(filename):
     redarray = narray[:, :, 0]
     E = redarray
     greenarray = narray[:, :, 1]
-    over_density = greenarray
+    over_density = greenarray / 128
     bluearray = narray[:, :, 2]
-    B = bluearray
+    B = bluearray / 30
     return E, over_density, B
 
 
