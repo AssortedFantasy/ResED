@@ -22,8 +22,8 @@ class Simulator:
         self.sim_data = []
         self.forcers = []
 
-        # First two steps must be DEFINED.
-        self.step = 2
+        # First step (step 0) is defined.
+        self.step = 1
 
         z, self.height, self.width = initial_conditions.shape
 
@@ -34,20 +34,17 @@ class Simulator:
 
         # Initial calculations done manually.
 
-        # First two positions defined
-        data[:2, 0, :, :] = initial_conditions[:2, :, :]
-        # First velocity is zero, Second is deltaX / t
-        data[1, 1, :, :] = (data[1, 0, :, :] - data[0, 0, :, :]) / self.timestep
-        # Instead of using the wave equation to calculate a for the two points, its forced into position.
-        # So its actually going to be defined using v
-        data[0, 2, :, :] = data[1, 1, :, :] / self.timestep
-        # We need to calculate the first acceleration MANUALLY.
-        filters.laplace(data[1, 0, :, :], data[1, 2, :, :], self.edge_conditions, self.edge_value)
-        data[1, 2, :, :] = self.simulation_parameters[0, :, :]
-        data[1, 2, :, :] -= data[1, 1, :, :] * self.simulation_parameters[2, :, :]
+        # Setting initial positions
+        data[0, 0, :, :] = initial_conditions[0, :, :]
+        # Setting initial velocity
+        data[0, 1, :, :] = initial_conditions[1, :, :]
+        # Calculating initial acceleration using positions and velocities.
+        filters.laplace(data[0, 0, :, :], data[0, 2, :, :], self.edge_conditions, self.edge_value)
+        data[0, 2, :, :] = self.simulation_parameters[0, :, :]
+        data[0, 2, :, :] -= data[0, 1, :, :] * self.simulation_parameters[2, :, :]
         for forcer in self.forcers:
-            data[1, 2, forcer.position_y, forcer.position_x] += forcer(self.timestep * self.step)
-        data[1, 2, :, :] *= self.simulation_parameters[1, :, :]
+            data[0, 2, forcer.position_y, forcer.position_x] += forcer(0)
+        data[0, 2, :, :] *= self.simulation_parameters[1, :, :]
         self.sim_data.append(data)
 
     def simulate(self, steps=1):
