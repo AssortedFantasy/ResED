@@ -1,10 +1,12 @@
 # Used for the BIG boi math
 import math
 
+
 # Default forcer class
 class Force:
     # Default return value if the forcer cannot define the value at the given time
     DEFAULT_VALUE = 0
+
     def __init__(self,position_x, position_y, force):
         # Lambda function to describe force
         self.force = force
@@ -52,6 +54,7 @@ class PolynomialForce(Force):
     # Call object to get force at set time
     def __call__(self, time):
         return self.force(time)
+
 
 # Defines the force as a sinodudal function using arguments of amplitude, phase_shift, and angular_frequency
 class SinosudalForce(Force):
