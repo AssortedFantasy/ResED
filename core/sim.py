@@ -123,9 +123,7 @@ class RamSim:
         if z != 5:
             raise RuntimeError("invalid initial conditions!")
 
-        self.sim_data = np.zeros((ARRAY_BREAK_LENGTH, 3, self.height, self.width), dtype=np.float)
-
-        # Initial calculations done manually.
+        self.sim_data = np.zeros((RAM_SAVER_LENGTH, 3, self.height, self.width), dtype=np.float)
 
         # Setting initial positions
         self.sim_data[0, 0, :, :] = initial_conditions[0, :, :]
@@ -136,20 +134,16 @@ class RamSim:
                               self.simulation_parameters, self.forcers, 0, self.edge_conditions, self.edge_value)
 
     def simulate(self, steps=1):
-        data = self.sim_data
         for _ in range(steps):
             index = self.step % RAM_SAVER_LENGTH
-
             # These are not copies, they are views
-            prev_position = data[index-1, 0, :, :]
-            prev_velocity = data[index-1, 1, :, :]
-            prev_acceleration = data[index-1, 2, :, :]
-            # For the ram saver version, we just roll with the fact we are overwriting previous data.
+            prev_position = self.sim_data[index-1, 0, :, :]
+            prev_velocity = self.sim_data[index-1, 1, :, :]
+            prev_acceleration = self.sim_data[index-1, 2, :, :]
 
-            # Also not copies, these are views
-            curr_position = data[index, 0, :, :]
-            curr_velocity = data[index, 1, :, :]
-            curr_acceleration = data[index, 2, :, :]
+            curr_position = self.sim_data[index, 0, :, :]
+            curr_velocity = self.sim_data[index, 1, :, :]
+            curr_acceleration = self.sim_data[index, 2, :, :]
 
             # Forward Euler Method
             curr_position += prev_position + prev_velocity*self.timestep + 1/2*prev_acceleration*self.timestep**2
@@ -163,8 +157,7 @@ class RamSim:
         if self.step < step:
             self.simulate(step - self.step + 1)
 
-        data = self.sim_data
-        return data[step % RAM_SAVER_LENGTH, :, :, :].copy()
+        return self.sim_data[step % RAM_SAVER_LENGTH, :, :, :].copy()
 
 
 def compute_accelerations(current_acceleration, current_velocities, current_positions, simulation_parameters, forcers,
