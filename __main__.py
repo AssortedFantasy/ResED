@@ -4,18 +4,13 @@ import os
 
 pygame.init()
 sim_clock = pygame.time.Clock()
-FPS = 60
-SIMID = 26
+FPS = 15
 
 image_pos = 0, 0
 step = 0
 picture_index = 0
 step_display = "Current Image %d" % step
-images = os.listdir(f"output\\sim{SIMID}")
-images = [float(name[:-4]) for name in images if name.endswith(".png")]
-images.sort()
-images = [str(name) + ".png" for name in images]
-
+images = os.listdir("output\\sim0")
 playing = False
 
 black = 0, 0, 0
@@ -24,7 +19,7 @@ red = 255, 0, 0
 green = 0, 255, 0, 0
 blue = 0, 0, 255, 0
 
-image = pygame.image.load(f"output\\sim{SIMID}\\{images[step]}")
+image = pygame.image.load(f"output\\sim0\\{images[step]}")
 step_display = ""
 size = width, height = image.get_rect().size
 screen = pygame.display.set_mode(size, pygame.RESIZABLE)
@@ -112,7 +107,7 @@ while True:
             play_button = pygame.Rect(button_play_dim)
             cycle_button = pygame.Rect(button_cycle_dim)
 
-    image = pygame.image.load(f"output\\sim{SIMID}\\{images[step]}")
+    image = pygame.image.load(f"output\\sim0\\{images[step]}")
     text_screen = font.render(step_display, False, black)
     image = pygame.transform.scale(image, image_size)
 
@@ -122,7 +117,7 @@ while True:
         else:
             playing = False
 
-        image = pygame.image.load(f"output\\sim{SIMID}\\{images[step]}")
+        image = pygame.image.load(f"output\\sim0\\{images[step]}")
     step_display = "Current Image %d" % step
 
     screen.fill(white)
